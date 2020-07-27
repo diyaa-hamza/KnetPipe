@@ -11,6 +11,7 @@
     <RepositoryUrl>https://github.com/diyaa-hamza/KnetPipe.git</RepositoryUrl>
     <PackageTags>knet,k-net</PackageTags>
     <NeutralLanguage>aa</NeutralLanguage>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
 </Project>
