@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace KnetPipe
+namespace DJH.KnetPipe
 {
     public class PaymentRequestResponse
     {

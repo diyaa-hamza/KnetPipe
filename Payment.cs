@@ -5,7 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace KnetPipe
+namespace DJH.KnetPipe
 {
     public class Payment
     {
