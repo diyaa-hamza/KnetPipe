@@ -2,6 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>djh_knet_pipe</PackageId>
+    <Authors>Diyaa Hamza</Authors>
+    <Company>Floward Holding</Company>
+    <Description>Knet Pipe that support the RAW method of Knet payment gateway and allows you connect without any additional DLL files</Description>
+    <Copyright>Diyaa Hamza</Copyright>
+    <PackageProjectUrl>https://github.com/diyaa-hamza/KnetPipe</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/diyaa-hamza/KnetPipe.git</RepositoryUrl>
+    <PackageTags>knet,k-net</PackageTags>
+    <NeutralLanguage>aa</NeutralLanguage>
   </PropertyGroup>
 
 </Project>
