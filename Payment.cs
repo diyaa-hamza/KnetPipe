@@ -1,9 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace DJH.KnetPipe
 {
@@ -11,13 +15,17 @@ namespace DJH.KnetPipe
     {
         public Payment(AccountConfig account, PaymentRequest paymentRequest)
         {
-            Account = account ?? throw new ArgumentNullException("The knet account details is required.", nameof(account));
-            PaymentRequest = paymentRequest ?? throw new ArgumentNullException("The payment request payload is required.", nameof(paymentRequest));
+            Account = account ??
+                      throw new ArgumentNullException("The knet account details is required.", nameof(account));
+            PaymentRequest = paymentRequest ??
+                             throw new ArgumentNullException("The payment request payload is required.",
+                                 nameof(paymentRequest));
         }
 
         public Payment(AccountConfig account)
         {
-            Account = account ?? throw new ArgumentNullException("The knet account details is required.", nameof(account));
+            Account = account ??
+                      throw new ArgumentNullException("The knet account details is required.", nameof(account));
         }
 
 
@@ -29,72 +37,76 @@ namespace DJH.KnetPipe
             var generateLink = new PaymentRequestResponse();
             try
             {
-                string ReqTrackId = "trackid=" + PaymentRequest.Trackid + "&";
+                var ReqTrackId = "trackid=" + PaymentRequest.Trackid + "&";
 
-                /* Getting Transaction Amount from previous pages. Since this sample page for demonstration, 
+                /* Getting Transaction Amount from previous pages. Since this sample page for demonstration,
                 values from previous page is directly taken from browser and used for transaction processing.
                 Merchants SHOULD NOT follow this practice in production environment. */
-                string TranAmount = Math.Round(PaymentRequest.Amount, 3).ToString();
-                string ReqAmount = "amt=" + TranAmount + "&";
+                var TranAmount = Math.Round(PaymentRequest.Amount, 3).ToString();
+                var ReqAmount = "amt=" + TranAmount + "&";
 
-                /* Tranportal ID is sensitive terminal information, merchant MUST ensure that Tranportal ID is never 
-                passed to customer browser by any means. Merchant MUST ensure that Tranportal ID is stored in a secure 
+                /* Tranportal ID is sensitive terminal information, merchant MUST ensure that Tranportal ID is never
+                passed to customer browser by any means. Merchant MUST ensure that Tranportal ID is stored in a secure
                 environment. Tranportal ID for test and production will be different, please contact PGSupport@knet.com.kw to
                 extract these details. */
 
-                string ReqTranportalId = "id=" + Account.TranportalId + "&";
+                var ReqTranportalId = "id=" + Account.TranportalId + "&";
 
                 /* Tranportal password is sensitive terminal information, merchant MUST ensure that Tranportal password
-                is never passed to customer browser by any means. Merchant MUST ensure that Tranportal password is stored in a secure 
+                is never passed to customer browser by any means. Merchant MUST ensure that Tranportal password is stored in a secure
                 environment. Tranportal password for test and production will be different, please contact PGSupport@knet.com.kw to
                 extract these details. */
 
-                string ReqTranportalPassword = "password=" + Account.TranportalPassword + "&";
+                var ReqTranportalPassword = "password=" + Account.TranportalPassword + "&";
 
                 /* Currency code of the transaction. this has to be set always to 414 (KD) */
-                string Currency = "414";
-                string ReqCurrency = "currencycode=" + Currency + "&";
+                var Currency = "414";
+                var ReqCurrency = "currencycode=" + Currency + "&";
 
                 /* Transaction language, this has to be set always to USA or AR */
-                string Langid = PaymentRequest.PageLanguage == PageLanguage.English ? "USA" : "AR";
-                string ReqLangid = "langid=" + Langid + "&";
+                var Langid = PaymentRequest.PageLanguage == PageLanguage.English ? "USA" : "AR";
+                var ReqLangid = "langid=" + Langid + "&";
 
-                /* Action Code of the transaction, this refers to type of transaction. 
+                /* Action Code of the transaction, this refers to type of transaction.
                 Action Code 1 stands of Purchase transaction  */
-                string Action = "1";
-                string ReqAction = "action=" + Action + "&";
+                var Action = "1";
+                var ReqAction = "action=" + Action + "&";
 
-                /* Response URL where Payment gateway will send response once transaction processing is completed 
+                /* Response URL where Payment gateway will send response once transaction processing is completed
                 Merchant MUST esure that below points in Response URL
                 1- Response URL must start with https://
                 2- the Response URL SHOULD NOT have any additional paramteres or query strings  */
-                string ReqResponseURL = "responseURL=" + PaymentRequest.ResponseURL + "&";
+                var ReqResponseURL = "responseURL=" + PaymentRequest.ResponseURL + "&";
 
-                /* Error URL where Payment gateway will send response in case any issues while processing the transaction 
-                Merchant MUST esure that below points in ErrorURL 
+                /* Error URL where Payment gateway will send response in case any issues while processing the transaction
+                Merchant MUST esure that below points in ErrorURL
                 1- error url must start with https://
                 2- the error url SHOULD NOT have any additional paramteres or query strings */
-                string ReqErrorURL = "errorURL=" + PaymentRequest.ErrorURL + "&";
+                var ReqErrorURL = "errorURL=" + PaymentRequest.ErrorURL + "&";
 
-                /* User Defined Fields as per Merchant requirement. Merchant MUST ensure merchant is not passing junk values OR CRLF in any of the UDF. 
+                /* User Defined Fields as per Merchant requirement. Merchant MUST ensure merchant is not passing junk values OR CRLF in any of the UDF.
                 In below sample UDF values are not utilized */
-                string ReqUdf1 = "udf1=" + PaymentRequest.Udf1 + "&";   // UDF1 values
-                string ReqUdf2 = "udf2=" + PaymentRequest.Udf2 + "&";   // UDF2 value 
-                string ReqUdf3 = "udf3=" + PaymentRequest.Udf3 + "&";   // UDF3 value 
-                string ReqUdf4 = "udf4=" + PaymentRequest.Udf4 + "&";   // UDF4 value
-                string ReqUdf5 = "udf5=" + PaymentRequest.Udf5 + "&";   // UDF5 value
+                var ReqUdf1 = "udf1=" + PaymentRequest.Udf1 + "&"; // UDF1 values
+                var ReqUdf2 = "udf2=" + PaymentRequest.Udf2 + "&"; // UDF2 value 
+                var ReqUdf3 = "udf3=" + PaymentRequest.Udf3 + "&"; // UDF3 value 
+                var ReqUdf4 = "udf4=" + PaymentRequest.Udf4 + "&"; // UDF4 value
+                var ReqUdf5 = "udf5=" + PaymentRequest.Udf5 + "&"; // UDF5 value
 
                 //==============================Encryption LOGIC CODE End==================================================================================================================================
-                /* Below are the fields / parameters which will be used for Encryption using (AES (128 bit)) Encryption 
+                /* Below are the fields / parameters which will be used for Encryption using (AES (128 bit)) Encryption
                    Algorithm. */
 
-                /* Terminal Resource Key is generated while creating terminal, And this the Key that is used for encrypting 
+                /* Terminal Resource Key is generated while creating terminal, And this the Key that is used for encrypting
                    the request/response from Merchant To PG and vice Versa
                    Please contact PGSupport@knet.com.kw to extract this key */
 
 
-                string TranRequest = ReqAmount + ReqAction + ReqResponseURL + ReqErrorURL + ReqTrackId + ReqUdf1 + ReqUdf2 + ReqUdf3 + ReqUdf4 + ReqUdf5 + ReqCurrency + ReqLangid + ReqTranportalId + ReqTranportalPassword;
-                string req = "&trandata=" + EncryptAES(TranRequest, Account.TermResourceKey) + "&errorURL=" + PaymentRequest.ErrorURL + "&responseURL=" + PaymentRequest.ResponseURL + "&tranportalId=" + Account.TranportalId;
+                var TranRequest = ReqAmount + ReqAction + ReqResponseURL + ReqErrorURL + ReqTrackId + ReqUdf1 +
+                                  ReqUdf2 + ReqUdf3 + ReqUdf4 + ReqUdf5 + ReqCurrency + ReqLangid + ReqTranportalId +
+                                  ReqTranportalPassword;
+                var req = "&trandata=" + EncryptAES(TranRequest, Account.TermResourceKey) + "&errorURL=" +
+                          PaymentRequest.ErrorURL + "&responseURL=" + PaymentRequest.ResponseURL + "&tranportalId=" +
+                          Account.TranportalId;
 
                 var testUrl = $"https://kpaytest.com.kw/kpg/PaymentHTTP.htm?param=paymentInit{req}";
                 var liveUrl = $"https://www.kpay.com.kw/kpg/PaymentHTTP.htm?param=paymentInit{req}";
@@ -110,8 +122,6 @@ namespace DJH.KnetPipe
                 //response.sendRedirect("https://kpaytest.com.kw/kpg/PaymentHTTP.htm?param=paymentInit" + req);
                 //response.sendRedirect("https://www.kpay.com.kw/kpg/PaymentHTTP.htm?param=paymentInit"+req);
                 //AES Encryption Method Starts 
-
-
             }
             catch (Exception ex)
             {
@@ -138,6 +148,7 @@ namespace DJH.KnetPipe
             finally
             {
             }
+
             return hexString.ToUpper();
         }
 
@@ -148,14 +159,17 @@ namespace DJH.KnetPipe
             {
                 throw new ArgumentNullException("plainText");
             }
+
             if (key == null || key.Length <= 0)
             {
                 throw new ArgumentNullException("key");
             }
+
             if (iv == null || iv.Length <= 0)
             {
                 throw new ArgumentNullException("key");
             }
+
             byte[] encrypted;
             // Create a RijndaelManaged object
             // with the specified key and IV.
@@ -181,6 +195,7 @@ namespace DJH.KnetPipe
                             //Write all data to the stream.
                             swEncrypt.Write(plainText);
                         }
+
                         encrypted = msEncrypt.ToArray();
                     }
                 }
@@ -195,6 +210,7 @@ namespace DJH.KnetPipe
         {
             return byteArrayToHexString(data, data.Length);
         }
+
         public static string byteArrayToHexString(byte[] data, int length)
         {
             string HEX_DIGITS = "0123456789abcdef";
@@ -225,21 +241,21 @@ namespace DJH.KnetPipe
                 var encrypted = StringToByteArray(cypher);
                 var back = DecryptStringFromBytes(encrypted, keybytes, iv);
                 return back;
-        }
+            }
             catch (Exception ex)
             {
                 throw;
             }
-            return "";
 
+            return "";
         }
 
         public byte[] StringToByteArray(string hex)
         {
             return Enumerable.Range(0, hex.Length)
-                             .Where(x => x % 2 == 0)
-                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
-                             .ToArray();
+                .Where(x => x % 2 == 0)
+                .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                .ToArray();
         }
 
         private string DecryptStringFromBytes(byte[] cipherText, byte[] key, byte[] iv)
@@ -249,10 +265,12 @@ namespace DJH.KnetPipe
             {
                 throw new ArgumentNullException("cipherText");
             }
+
             if (key == null || key.Length <= 0)
             {
                 throw new ArgumentNullException("key");
             }
+
             if (iv == null || iv.Length <= 0)
             {
                 throw new ArgumentNullException("key");
@@ -291,5 +309,92 @@ namespace DJH.KnetPipe
         }
 
 
+        public async Task<PaymentRequestResponse> ProcessApplePayAsync(ApplePayRequest applePayRequest)
+        {
+            var paymentRequestResponse = new PaymentRequestResponse();
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    // Make sure the Apple Pay paymentData is properly formatted
+                    // The error suggests there might be an issue with escaped characters
+                    var cleanedPaymentData = applePayRequest.PaymentData.Replace("\\\\", "\\").Replace("\\\"", "\"");
+                    var requestXml = new XElement("request",
+                        new XElement("id", Account.TranportalId),
+                        new XElement("password", Account.TranportalPassword),
+                        new XElement("action", "1"),
+                        new XElement("currency", applePayRequest.Currency),
+                        new XElement("langid", PaymentRequest.PageLanguage == PageLanguage.English ? "EN" : "AR"),
+                        new XElement("amt", PaymentRequest.Amount.ToString("F3")),
+                        new XElement("trackid", PaymentRequest.Trackid),
+                        new XElement("udf1", PaymentRequest.Udf1),
+                        new XElement("udf2", PaymentRequest.Udf2),
+                        new XElement("udf3", PaymentRequest.Udf3),
+                        new XElement("udf4", PaymentRequest.Udf4),
+                        new XElement("udf5", PaymentRequest.Udf5),
+                        new XElement("udf8", applePayRequest.TransactionIdentifier),
+                        new XElement("udf9", cleanedPaymentData),
+                        new XElement("udf10", applePayRequest.PaymentMethod),
+                        new XElement("errorURL", PaymentRequest.ErrorURL),
+                        new XElement("responseURL", PaymentRequest.ResponseURL)
+                    );
+
+                    var content = new StringContent(requestXml.ToString());
+                    content.Headers.ContentType = new MediaTypeHeaderValue("application/xml");
+
+                    var url = PaymentRequest.Environment == Environment.Test
+                        ? "https://www.kpaytest.com.kw/kpg/tranPipe.htm?param=tranInit"
+                        : "https://www.kpay.com.kw/kpg/tranPipe.htm?param=tranInit";
+
+                    var response = await client.PostAsync(url, content);
+                    response.EnsureSuccessStatusCode();
+
+                    var stringResponse = await response.Content.ReadAsStringAsync();
+                    var xmlStringResponse = $"<response>{stringResponse}</response>";
+
+                    var responseXml = XDocument.Parse(xmlStringResponse);
+                    if (responseXml.Root != null)
+                    {
+                        var result = responseXml.Root.Element("result")?.Value;
+
+                        PaymentResponse paymentResponse;
+
+                        switch (result)
+                        {
+                            case "CAPTURED":
+                                paymentResponse = DeserializeXml<PaymentResponse>(xmlStringResponse);
+                                paymentRequestResponse.PaymentResponse = paymentResponse;
+                                paymentRequestResponse.IsError = false;
+                                break;
+                            case "NOT CAPTURED":
+                                paymentResponse = DeserializeXml<PaymentResponse>(xmlStringResponse);
+                                paymentRequestResponse.PaymentResponse = paymentResponse;
+                                paymentRequestResponse.IsCaptured = false;
+                                paymentRequestResponse.IsError = false;
+                                break;
+                            default:
+                                paymentRequestResponse.IsError = true;
+                                paymentRequestResponse.ErrorMessage = result;
+                                break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Apple Pay processing failed", ex);
+            }
+
+            return paymentRequestResponse;
+        }
+
+        private static T DeserializeXml<T>(string xml)
+        {
+            var serializer = new XmlSerializer(typeof(T));
+            using (var reader = new StringReader(xml))
+            {
+                return (T) serializer.Deserialize(reader);
+            }
+        }
     }
 }

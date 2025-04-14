@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DJH.KnetPipe
+﻿namespace DJH.KnetPipe
 {
     public class PaymentRequest
     {
@@ -50,6 +46,10 @@ namespace DJH.KnetPipe
         /// The language of the payment page
         /// </summary>
         public PageLanguage PageLanguage { get; set; }
+
+        public PaymentRequest()
+        {
+        }
 
         public PaymentRequest(string trackid, string responseURL, string errorURL, decimal amount,
             string udf1 = "", string udf2 = "", string udf3 = "", string udf4 = "", string udf5 = "",
