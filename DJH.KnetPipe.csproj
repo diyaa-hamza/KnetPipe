@@ -12,12 +12,17 @@
     <NeutralLanguage>aa</NeutralLanguage>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <Version>2.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="bin\Debug\djh_knet_pipe.1.0.0.nupkg" />
     <None Include="LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="README.md">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
