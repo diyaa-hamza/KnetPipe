@@ -351,3 +351,5 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+.idea/.idea.KnetPipe.dir/.idea/vcs.xml
+/.idea
